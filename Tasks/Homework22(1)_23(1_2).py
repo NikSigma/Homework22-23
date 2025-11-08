@@ -1,6 +1,5 @@
 import pygame
 import random
-import os
 
 pygame.init()
 
@@ -12,7 +11,7 @@ pygame.display.set_caption('Втеча з лабіринту')
 background_color = (0, 0, 0)
 cell_size = 40
 
-wall_img = pygame.image.load('wall.jpg')
+wall_img = pygame.image.load('coin.jpeg')
 wall_img = pygame.transform.scale(wall_img, (cell_size, cell_size))
 
 player_frames = []
@@ -42,38 +41,12 @@ except Exception:
     key_img = pygame.Surface((cell_size, cell_size))
     key_img.fill((255, 215, 0))
 
-
-coin_img = None
-script_dir = os.path.dirname(__file__)
-parent_dir = os.path.abspath(os.path.join(script_dir, '..'))
-for name in ('coin.png', 'coin.jpg', 'coin.jpeg'):
-    
-    p1 = os.path.join(script_dir, name)
-    if os.path.exists(p1):
-        try:
-            coin_img = pygame.image.load(p1)
-            coin_img = pygame.transform.scale(coin_img, (cell_size, cell_size))
-            break
-        except Exception:
-            coin_img = None
-    
-    p2 = os.path.join(parent_dir, name)
-    if os.path.exists(p2):
-        try:
-            coin_img = pygame.image.load(p2)
-            coin_img = pygame.transform.scale(coin_img, (cell_size, cell_size))
-            break
-        except Exception:
-            coin_img = None
-
-if coin_img is None:
-   
-    try:
-        coin_img = pygame.image.load('coin.png')
-        coin_img = pygame.transform.scale(coin_img, (cell_size, cell_size))
-    except Exception:
-        coin_img = pygame.Surface((cell_size, cell_size))
-        coin_img.fill((255, 223, 0))
+try:
+    coin_img = pygame.image.load('coin.png')
+    coin_img = pygame.transform.scale(coin_img, (cell_size, cell_size))
+except Exception:
+    coin_img = pygame.Surface((cell_size, cell_size))
+    coin_img.fill((255, 223, 0))
 
 try:
     door_img = pygame.image.load('door.jpg')
@@ -114,14 +87,14 @@ for y in range(len(maze)):
 key_position = random.choice(free_cells[:-1])
 door_position = free_cells[-1]
 
-
+# Spawn up to 3 coins on unique free cells (avoid key and door)
 available_for_coins = [c for c in free_cells if c != key_position and c != door_position]
 coin_positions = []
 try:
-    
+    # random.sample will raise if k > len(list); handle that
     coin_positions = random.sample(available_for_coins, k=min(3, len(available_for_coins)))
 except Exception:
-   
+    # fallback: take up to first 3
     coin_positions = available_for_coins[:3]
 
 
@@ -184,16 +157,16 @@ while running:
 
             
             if event.key == pygame.K_e:
-                
+                # first, check coins: remove a coin if player is standing on it
                 picked_coin = False
                 for c in coin_positions:
                     if c == player_cell:
                         coin_positions.remove(c)
                         picked_coin = True
-                        print('Ти знайшов гривню!')
+                        print('Coin picked up!')
                         break
 
-                
+                # If no coin picked here, fall back to key/door interaction
                 if not picked_coin:
                     if key_position is not None and player_cell == key_position and not has_key:
                         has_key = True
@@ -245,7 +218,7 @@ while running:
     
     if key_position is not None:
         screen.blit(key_img, (key_position[0] * cell_size, key_position[1] * cell_size))
-   
+    # draw coins
     for c in coin_positions:
         screen.blit(coin_img, (c[0] * cell_size, c[1] * cell_size))
     screen.blit(door_img, (door_position[0] * cell_size, door_position[1] * cell_size))
