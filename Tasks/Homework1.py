@@ -4,6 +4,7 @@ import os
 
 pygame.init()
 
+print("як я сюди потрапив? Треба вибиратися звідси, може цей ключ допоможе?")
 
 screen = pygame.display.set_mode((800, 600))
 pygame.display.set_caption('Втеча з лабіринту')
@@ -145,6 +146,41 @@ frame_time = 80
 last_frame_update = pygame.time.get_ticks()
 
 clock = pygame.time.Clock()
+
+
+def show_start_screen():
+    showing = True
+    font = pygame.font.SysFont('arial', 32)
+    small_font = pygame.font.SysFont('arial', 24)
+    while showing:
+        screen.fill((0, 0, 0))
+        title = font.render("Втеча з лабіринту", True, (255, 255, 255))
+        how_to = small_font.render("Як грати:", True, (255, 255, 255))
+        controls = [
+            "W, A, S, D - рухатися",
+            "E - взаємодіяти з речами",
+            "",
+            "Натисни будь-яку клавішу, щоб почати гру"
+        ]
+
+        screen.blit(title, (230, 100))
+        screen.blit(how_to, (330, 200))
+        for i, line in enumerate(controls):
+            text = small_font.render(line, True, (200, 200, 200))
+            screen.blit(text, (180, 250 + i * 40))
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.KEYDOWN:
+                showing = False
+
+
+show_start_screen()
+
 
 running = True
 while running:
