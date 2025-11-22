@@ -76,6 +76,67 @@ if coin_img is None:
         coin_img = pygame.Surface((cell_size, cell_size))
         coin_img.fill((255, 223, 0))
 
+
+coin_sound = None
+key_sound = None
+bg_music = None
+try:
+    pygame.mixer.init()
+    
+    for sname in ('coin_sound.wav', 'coin_sound.ogg'):
+        p = os.path.join(script_dir, sname)
+        if os.path.exists(p):
+            try:
+                coin_sound = pygame.mixer.Sound(p)
+                break
+            except Exception:
+                coin_sound = None
+        
+        p2 = os.path.join(parent_dir, sname)
+        if os.path.exists(p2):
+            try:
+                coin_sound = pygame.mixer.Sound(p2)
+                break
+            except Exception:
+                coin_sound = None
+    for sname in ('keys_sound.wav', 'key_sound.wav', 'keys_sound.ogg', 'key_sound.ogg'):
+        p = os.path.join(script_dir, sname)
+        if os.path.exists(p):
+            try:
+                key_sound = pygame.mixer.Sound(p)
+                break
+            except Exception:
+                key_sound = None
+        p2 = os.path.join(parent_dir, sname)
+        if os.path.exists(p2):
+            try:
+                key_sound = pygame.mixer.Sound(p2)
+                break
+            except Exception:
+                key_sound = None
+    
+    for mname in ('game_sound.wav', 'game_sound.ogg'):
+        p = os.path.join(parent_dir, mname)
+        if os.path.exists(p):
+            try:
+                bg_music = p
+                break
+            except Exception:
+                bg_music = None
+   
+    if bg_music is not None:
+        try:
+            pygame.mixer.music.load(bg_music)
+            pygame.mixer.music.set_volume(0.6)
+            pygame.mixer.music.play(-1)
+        except Exception:
+            pass
+except Exception:
+   
+    coin_sound = None
+    key_sound = None
+    bg_music = None
+
 try:
     door_img = pygame.image.load('door.jpg')
     door_img = pygame.transform.scale(door_img, (cell_size, cell_size))
@@ -128,6 +189,25 @@ except Exception:
 
 possible_starts = [c for c in free_cells if c != key_position and c != door_position]
 player_cell = possible_starts[0] if possible_starts else [1, 1]
+
+
+trap_candidates = [c for c in free_cells if c != key_position and c != door_position and c not in coin_positions]
+trap_position = None
+if trap_candidates:
+   
+    start_cell = player_cell
+    non_start_candidates = [c for c in trap_candidates if c != start_cell]
+    trap_position = random.choice(non_start_candidates or trap_candidates)
+
+
+trap_triggered = False
+trap_visible = False
+trapped = False
+trapped_end_time = 0
+
+
+trap_img = pygame.Surface((cell_size, cell_size))
+trap_img.fill((200, 0, 0))
 
 
 moving = False
@@ -195,7 +275,7 @@ while running:
                 frame_index = (frame_index + 1) % len(player_frames)
                 last_frame_update = pygame.time.get_ticks()
 
-            if not moving:
+            if not moving and not trapped:
                 dx, dy = 0, 0
                 if event.key == pygame.K_w:
                     dy = -1
@@ -209,16 +289,14 @@ while running:
                 if dx != 0 or dy != 0:
                     tx = player_cell[0] + dx
                     ty = player_cell[1] + dy
-                    
+
                     if 0 <= ty < len(maze) and 0 <= tx < len(maze[0]) and maze[ty][tx] == 0:
                         moving = True
                         move_target_cell = [tx, ty]
                         move_start_px = player_cell[0] * cell_size
                         move_start_py = player_cell[1] * cell_size
                         move_progress = 0.0
-                       
 
-            
             if event.key == pygame.K_e:
                 
                 picked_coin = False
@@ -226,7 +304,12 @@ while running:
                     if c == player_cell:
                         coin_positions.remove(c)
                         picked_coin = True
-                        print('Ти знайшов гривню!')
+                        print('Coin picked up!')
+                        try:
+                            if coin_sound is not None:
+                                coin_sound.play()
+                        except Exception:
+                            pass
                         break
 
                 
@@ -235,6 +318,11 @@ while running:
                         has_key = True
                         key_position = None
                         print('Ти підібрав ключ!')
+                        try:
+                            if key_sound is not None:
+                                key_sound.play()
+                        except Exception:
+                            pass
                     elif has_key and player_cell == door_position:
                         print('Ти вийшов з лабіринта, ти тепер крутий!')
                         running = False
