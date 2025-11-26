@@ -205,9 +205,10 @@ trap_visible = False
 trapped = False
 trapped_end_time = 0
 
-
+# Create red circle trap image
 trap_img = pygame.Surface((cell_size, cell_size))
-trap_img.fill((200, 0, 0))
+trap_img.fill((0, 0, 0))  # transparent background
+pygame.draw.circle(trap_img, (200, 0, 0), (cell_size // 2, cell_size // 2), cell_size // 2 - 2)
 
 
 moving = False

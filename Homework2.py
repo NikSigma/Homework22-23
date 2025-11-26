@@ -19,7 +19,7 @@ key_img = pygame.image.load('keyfromspace.jpg')
 key_img = pygame.transform.scale(key_img, (cell_size, cell_size))
 
 
-door_img = pygame.image.load('doorfromspace.jpg')
+door_img = pygame.image.load('doorfromspace.jpdwg')
 door_img = pygame.transform.scale(door_img, (cell_size, cell_size))
 
 
